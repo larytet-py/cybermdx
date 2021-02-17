@@ -50,7 +50,24 @@ class RuleCommunicatingWithSubnet():
     IPv4 only
     '''
     def __init__(self, id, subnet, classification):
-        self.id, self.ip_address = id, ip_address
+        self.id, self.subnet = id, subnet
+        self.classification = classification
+        
+    def type():
+        return "communicating_with_subnet"
+
+    def match(communication):
+        if subnet_match(communication.ip_address, == self.subnet):
+            return self.classification
+        return None
+
+
+class RuleCommunicatingWithDomain():
+    '''
+    IPv4 only
+    '''
+    def __init__(self, id, domain, classification):
+        self.id, self.domain = id, domain
         self.classification = classification
         
     def type():
@@ -60,7 +77,6 @@ class RuleCommunicatingWithSubnet():
         if subnet_match(communication.ip_address, == self.subnet):
             return self.classification
         return None
-
 
 def loadRules():
     def __init__(self, id, ):
