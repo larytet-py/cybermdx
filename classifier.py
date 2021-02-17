@@ -155,18 +155,23 @@ def process_communication_job(device_id, rules, classifications_file):
     if classification != None:
         devices_classifications[device_id] = (classification, line_idx)
 
+def csv_row_to_communication(line):
+    line = line.strip()
+    fields = line.split(",")
+    communication_id = fields[0].strip()
+    timestamp = fields[1].strip()
+    device_id = fields[2].strip()
+    protocol_name = fields[3].strip()
+    host = fields[4].strip()
+    communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
+    return communication
+
 def process_communications(rules, communications_file, classifications_file):
     line_idx = 1
     jobs = []
     for line in communications_file:
-        line = line.strip()
-        fields = line.split(",")
-        communication_id = fields[0].strip()
-        timestamp = fields[1].strip()
-        device_id = fields[2].strip()
-        protocol_name = fields[3].strip()
-        host = fields[4].strip()
-        communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
+        communication = csv_row_to_communication(line)
+        device_id = communication.device_id
         if not device_id in devices_queues:
             devices_queues[device_id] = multiprocessing.Queue()
         device_queue = devices_queues[device_id]
