@@ -7,3 +7,11 @@ Build
 pip instal netaddr IPy
 pylint classifier.py
 ```
+
+
+Usage
+
+```
+python3 ./classifier.py 
+```
+
