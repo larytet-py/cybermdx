@@ -104,10 +104,10 @@ def load_rules(rulesFile):
     for line in rulesFile:
         line = line.strip()
         fields = line.split(",")
-        rule_id = int(fields[0])
-        rule_type = fields[1]
-        argument = fields[2]
-        classification = fields[3]
+        rule_id = int(fields[0].strip())
+        rule_type = fields[1].strip()
+        argument = fields[2].strip()
+        classification = fields[3].strip()
 
         rule_class = rules_by_type[rule_type]
         rule = rule_class(rule_id, argument, classification)
@@ -132,11 +132,11 @@ def process_communications(rules, communications_file, classifications_file):
     for line in communications_file:
         line = line.strip()
         fields = line.split(",")
-        communication_id = fields[0]
-        timestamp = fields[1]
-        device_id = fields[2]
-        protocol_name = fields[3]
-        host = fields[4]
+        communication_id = fields[0].strip()
+        timestamp = fields[1].strip()
+        device_id = fields[2].strip()
+        protocol_name = fields[3].strip()
+        host = fields[4].strip()
         communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
         classification = process_communication(rules, communication)
         # I store the last classification
