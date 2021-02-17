@@ -102,6 +102,9 @@ for rule in rules_classes:
 def get_rule_id(rule): return rule.rule_id
 
 def load_rules(rulesFile):
+    '''
+    Read the file line by line, collect rules in a list
+    '''
     rules = []
     for line in rulesFile:
         line = line.strip()
@@ -121,6 +124,9 @@ def load_rules(rulesFile):
     return rules
 
 def process_communication(rules, communication):
+    '''
+    Apply all rules to the communication
+    '''
     result = None
     for rule in rules: # rules are ordered by ID
         classification = rule.match(communication)
