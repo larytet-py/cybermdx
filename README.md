@@ -13,5 +13,6 @@ Usage
 
 ```
 python3 ./classifier.py ./classification_rules.csv ./communications.csv ./classifications.csv
+cat ./classifications.csv
 ```
 
