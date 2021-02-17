@@ -6,6 +6,7 @@ Build
 pyling classifier.py
 '''
 
+import sys
 from collections import namedtuple
 import netaddr
 import IPy
@@ -104,7 +105,7 @@ for rule in rules_classes:
     rule_type = rule.type()
     rules_by_type[rule_type] = rule
 
-def loadRules(rulesFile):
+def load_rules(rulesFile):
     rules = []
     for line in rulesFile:
         fields = line.split(",")
@@ -151,8 +152,8 @@ def process_communications(rules, communications_file, classifications_file):
 
 def main():
     rules_file = open(sys.argv[1], 'r')
-    rules = loadRules(rules_file)
-    rulesFile.close()
+    rules = load_rules(rules_file)
+    rules_file.close()
 
     communications_file = open(sys.argv[2], 'r')
     classifications_file = open(sys.argv[3], 'w')
