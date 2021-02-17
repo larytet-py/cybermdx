@@ -12,6 +12,7 @@ pylint classifier.py
 Usage
 
 ```
+rm ./classifications.csv
 python3 ./classifier.py ./classification_rules.csv ./communications.csv ./classifications.csv
 cat ./classifications.csv
 ```
