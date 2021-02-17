@@ -95,7 +95,7 @@ def loadRules(rulesFile):
     rules = []
     for line in rulesFile:
         fields = line.split(",")
-        rule_id = fields[0]
+        rule_id = int(fields[0])
         rule_type = fields[1]
         argument = fields[2]
         classification = fields[3]
@@ -110,7 +110,8 @@ def loadRules(rulesFile):
     return rules
 
 def process_communication(rules, communication):
-    for rule in rules:
+    for rule in rules: # rules are ordered by ID
+        pass
 
 def process_communications(rules, communications_file, classifications_file):
     classifications = {}
