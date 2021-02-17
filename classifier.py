@@ -140,10 +140,10 @@ def process_communications(rules, communications_file, classifications_file):
         communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
         classification = process_communication(rules, communication)
         # I store the last classification
-        classifications[device_id] = classification
+        classifications[device_id] = (classification, line_idx)
         line_idx += 1
 
-    for device_id, classification in classifications.items():
+    for device_id, (classification, line_idx) in classifications.items():
         classifications_file.write(f"{line_idx},{device_id},{classification}\n")
 
 def main():
