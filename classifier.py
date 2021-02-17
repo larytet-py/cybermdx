@@ -103,13 +103,16 @@ def loadRules(rulesFile):
         rule_class = rules_by_type[rule_type]
         rule = rule_class(rule_id, argument, classification)
         rules.append(rule)
+    # sort by rule_id
+    # todo
 
     return rules
 
 def process_communication(rules, communication):
-    pass
+    for rule in rules:
 
 def process_communications(rules, communications_file, classifications_file):
+    classifications = {}
     line_idx = 1
     for line in communications_file:
         fields = line.split(",")
@@ -120,8 +123,12 @@ def process_communications(rules, communications_file, classifications_file):
         host = fields[4]
         communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
         classification = process_communication(rules, communication)
-        classifications_file.write(f"{line_idx},{device_id},{classification}\n")
+        # I store the last classification
+        classifications[device_id] = classification
         line_idx += 1
+
+    for device_id, classification in classifications.items():
+        classifications_file.write(f"{line_idx},{device_id},{classification}\n")
 
 def main():
     rules_file = open(sys.argv[1], 'r')
