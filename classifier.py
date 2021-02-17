@@ -83,7 +83,7 @@ class RuleCommunicatingWithDomain():
         
     @staticmethod
     def type():
-        return "communicating_with"
+        return "communicating_with_domain"
 
     def match(self, communication):
         domain = host_from_address(communication.ip_address)
