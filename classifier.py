@@ -103,8 +103,9 @@ def loadRules(rulesFile):
         rule_class = rules_by_type[rule_type]
         rule = rule_class(rule_id, argument, classification)
         rules.append(rule)
+        
     # sort by rule_id
-    # todo
+    rules.sort(key=id)
 
     return rules
 
