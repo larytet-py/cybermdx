@@ -102,6 +102,7 @@ def get_rule_id(rule): return rule.rule_id
 def load_rules(rulesFile):
     rules = []
     for line in rulesFile:
+        line = line.strip()
         fields = line.split(",")
         rule_id = int(fields[0])
         rule_type = fields[1]
@@ -129,6 +130,7 @@ def process_communications(rules, communications_file, classifications_file):
     classifications = {}
     line_idx = 1
     for line in communications_file:
+        line = line.strip()
         fields = line.split(",")
         communication_id = fields[0]
         timestamp = fields[1]
