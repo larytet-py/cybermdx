@@ -1,4 +1,4 @@
-Get two iput CSV files rules and commuincaitons
+Get two input CSV files rules and commuincaitons
 Produce classifications for every line in the communication file 
 
 Build
