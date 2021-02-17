@@ -129,8 +129,9 @@ def process_communication(rules, communication):
     return result
 
 devices_classifications = {}
-    # For parallel execution I need a processing queue for every device_id
-    # https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
+
+# For parallel execution I need a processing queue for every device_id
+# https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
 devices_queues = {}
 
 def process_communication_job(device_id, rules, classifications_file):
