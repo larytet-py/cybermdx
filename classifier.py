@@ -26,6 +26,7 @@ class RuleCommunicatingProtocol():
     def match(communication):
         if communication.protocol_name == self.protocol_name:
             return self.classification
+        return None
         
 
 class RuleCommunicatingWith():
@@ -42,6 +43,7 @@ class RuleCommunicatingWith():
     def match(communication):
         if communication.ip_address == self.ip_address:
             return self.classification
+        return None
 
 class RuleCommunicatingWithSubnet():
     '''
@@ -55,8 +57,9 @@ class RuleCommunicatingWithSubnet():
         return "communicating_with"
 
     def match(communication):
-        if communication.ip_address == self.ip_address:
+        if subnet_match(communication.ip_address, == self.subnet):
             return self.classification
+        return None
 
 
 def loadRules():
