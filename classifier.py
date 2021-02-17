@@ -8,7 +8,19 @@ pyling classifier.py
 
 from collections import namedtuple
 import netaddr
+import IPy
 
+# simple cache
+reversed_names = {}
+def host_from_address(ip_address):
+    if ip_address in reversed_names:
+        return reversed_names[ip_address]
+
+    ip = IPy.IP(ip_address)
+    domain = ip.reverseName()
+    # cache the result
+    reversed_names[ip_address] = domain
+    return domain
 
 def subnet_match(ip_address, subnet):
     '''
@@ -19,8 +31,8 @@ def subnet_match(ip_address, subnet):
 Communication = namedtuple('Communication', ["id", "timestamp", "device_id", "protocol_name", "host"])
 
 class RuleCommunicatingProtocol():
-    def __init__(self, id, protocol_name, classification):
-        self.id, self.protocol_name = id, protocol_name
+    def __init__(self, rule_id, protocol_name, classification):
+        self.rule_id, self.protocol_name = rule_id, protocol_name
         self.classification = classification
 
     @staticmethod
@@ -37,8 +49,8 @@ class RuleCommunicatingWith():
     '''
     IPv4 only
     '''
-    def __init__(self, id, ip_address, classification):
-        self.id, self.ip_address = id, ip_address
+    def __init__(self, rule_id, ip_address, classification):
+        self.rule_id, self.ip_address = rule_id, ip_address
         self.classification = classification
         
     @staticmethod
@@ -54,8 +66,8 @@ class RuleCommunicatingWithSubnet():
     '''
     IPv4 only
     '''
-    def __init__(self, id, subnet, classification):
-        self.id, self.subnet = id, subnet
+    def __init__(self, rule_id, subnet, classification):
+        self.rule_id, self.subnet = rule_id, subnet
         self.classification = classification
         
     @staticmethod
@@ -72,8 +84,8 @@ class RuleCommunicatingWithDomain():
     '''
     IPv4 only
     '''
-    def __init__(self, id, domain, classification):
-        self.id, self.domain = id, domain
+    def __init__(self, rule_id, domain, classification):
+        self.rule_id, self.domain = rule_id, domain
         self.classification = classification
         
     @staticmethod
@@ -81,7 +93,8 @@ class RuleCommunicatingWithDomain():
         return "communicating_with"
 
     def match(self, communication):
-        if subnet_match(communication.domain == self.domain):
+        domain = host_from_address(communication.ip_address)
+        if domain == self.domain:
             return self.classification
         return None
 
@@ -105,7 +118,7 @@ def loadRules(rulesFile):
         rules.append(rule)
         
     # sort by rule_id
-    rules.sort(key=id)
+    rules.sort(key=rule_id)
 
     return rules
 
