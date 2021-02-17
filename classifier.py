@@ -32,9 +32,6 @@ class RuleCommunicatingProtocol():
     def type():
         return "communicating_protocol"
 
-    def get_id(self):
-        return self.rule_id
-
     def match(self, communication):
         if communication.protocol_name == self.protocol_name:
             return self.classification
@@ -53,9 +50,6 @@ class RuleCommunicatingWith():
     def type():
         return "communicating_with"
 
-    def get_id(self):
-        return self.rule_id
-
     def match(self, communication):
         if communication.ip_address == self.ip_address:
             return self.classification
@@ -72,9 +66,6 @@ class RuleCommunicatingWithSubnet():
     @staticmethod
     def type():
         return "communicating_with_subnet"
-
-    def get_id(self):
-        return self.rule_id
 
     def match(self, communication):
         if subnet_match(communication.ip_address, self.subnet):
@@ -94,9 +85,6 @@ class RuleCommunicatingWithDomain():
     def type():
         return "communicating_with_domain"
 
-    def get_id(self):
-        return self.rule_id
-
     def match(self, communication):
         domain = host_from_address(communication.ip_address)
         if domain == self.domain:
@@ -108,6 +96,8 @@ rules_by_type = {}
 for rule in rules_classes:
     rule_type = rule.type()
     rules_by_type[rule_type] = rule
+
+def get_rule_id(rule): return rule.rule_id
 
 def load_rules(rulesFile):
     rules = []
@@ -123,7 +113,7 @@ def load_rules(rulesFile):
         rules.append(rule)
         
     # sort by rule_id
-    rules.sort(key=get_id)
+    rules.sort(key=get_rule_id)
 
     return rules
 
