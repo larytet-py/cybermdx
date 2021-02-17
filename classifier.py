@@ -63,7 +63,7 @@ class RuleCommunicatingWithSubnet():
         return "communicating_with_subnet"
 
     def match(self, communication):
-        if subnet_match(communication.ip_address, == self.subnet):
+        if subnet_match(communication.ip_address, self.subnet):
             return self.classification
         return None
 
