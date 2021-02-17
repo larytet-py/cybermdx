@@ -110,6 +110,7 @@ def process_communication(rules, communication):
     pass
 
 def process_communications(rules, communications_file, classifications_file):
+    line_idx = 1
     for line in communications_file:
         fields = line.split(",")
         communication_id = fields[0]
@@ -118,6 +119,9 @@ def process_communications(rules, communications_file, classifications_file):
         protocol_name = fields[3]
         host = fields[4]
         communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
+        classification = process_communication(rules, communication)
+        classifications_file.write(f"{line_idx},{device_id},{classification}\n")
+        line_idx += 1
 
 def main():
     rules_file = open(sys.argv[1], 'r')
