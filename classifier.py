@@ -162,6 +162,7 @@ def process_communications(rules, communications_file, classifications_file):
         job = threading.Thread(target=process_communication_job, args=(device_id, rules, classifications_file))
         job.start()
         jobs.append(job)
+        line_idx += 1
 
     for job in jobs:
         job.join()
