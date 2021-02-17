@@ -51,7 +51,7 @@ class RuleCommunicatingWith():
         return "communicating_with"
 
     def match(self, communication):
-        if communication.ip_address == self.ip_address:
+        if communication.host == self.ip_address:
             return self.classification
         return None
 
@@ -68,7 +68,7 @@ class RuleCommunicatingWithSubnet():
         return "communicating_with_subnet"
 
     def match(self, communication):
-        if subnet_match(communication.ip_address, self.subnet):
+        if subnet_match(communication.host, self.subnet):
             return self.classification
         return None
 
@@ -86,7 +86,7 @@ class RuleCommunicatingWithDomain():
         return "communicating_with_domain"
 
     def match(self, communication):
-        domain = host_from_address(communication.ip_address)
+        domain = host_from_address(communication.host)
         if domain == self.domain:
             return self.classification
         return None
