@@ -1,0 +1,4 @@
+1,communicating_protocol,http,user endpoint
+2,communicating_with,10.1.1.1,ct
+3,communicating_with_subnet,10.1.1.0/24,ct
+4,communicating_with_domain,www.apple.com,iphone
