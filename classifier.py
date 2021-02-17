@@ -3,7 +3,8 @@ Get two iput CSV files rules and commuincaitons
 Produce classifications for every line in the communication file 
 
 Build
-pyling classifier.py
+pip instal netaddr IPy
+pylint classifier.py
 '''
 
 import sys
