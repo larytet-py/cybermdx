@@ -5,6 +5,24 @@ import IPy
 import multiprocessing
 import threading
 
+# simple cache
+reversed_names = {}
+def host_from_address(ip_address):
+    if ip_address in reversed_names:
+        return reversed_names[ip_address]
+
+    ip = IPy.IP(ip_address)
+    domain = ip.reverseName()
+    # cache the result
+    reversed_names[ip_address] = domain
+    return domain
+
+def subnet_match(ip_address, subnet):
+    '''
+    https://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
+    '''
+    return netaddr.IPAddress(ip_address) in netaddr.IPNetwork(subnet)
+
 Communication = namedtuple('Communication', ["id", "timestamp", "device_id", "protocol_name", "host"])
 
 class RuleCommunicatingProtocol():
