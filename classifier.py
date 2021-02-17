@@ -176,9 +176,11 @@ def process_communications(rules, communications_file, classifications_file):
         jobs.append(job)
         line_idx += 1
 
+    # wait for all started jobs
     for job in jobs:
         job.join()
 
+    # write the collected classificatios to a file
     for device_id, (classification, line_idx) in devices_classifications.items():
         classifications_file.write(f"{line_idx},{device_id},{classification}\n")
 
