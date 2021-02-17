@@ -2,6 +2,8 @@ import sys
 from collections import namedtuple
 import netaddr
 import IPy
+import multiprocessing
+import threading
 
 # simple cache
 reversed_names = {}
@@ -126,9 +128,24 @@ def process_communication(rules, communication):
             result = classification
     return result
 
+devices_classifications = {}
+    # For parallel execution I need a processing queue for every device_id
+    # https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
+devices_queues = {}
+
+def process_communication_job(device_id, rules, classifications_file):
+    device_queue = devices_queues[device_id]
+    (communication, line_idx) = device_queue.get()
+    classification = process_communication(rules, communication)
+    # I store the last classification
+    if not device_id in devices_classifications:
+        devices_classifications[device_id] = (classification, line_idx)
+    if classification != None:
+        devices_classifications[device_id] = (classification, line_idx)
+
 def process_communications(rules, communications_file, classifications_file):
-    classifications = {}
     line_idx = 1
+    jobs = []
     for line in communications_file:
         line = line.strip()
         fields = line.split(",")
@@ -138,15 +155,18 @@ def process_communications(rules, communications_file, classifications_file):
         protocol_name = fields[3].strip()
         host = fields[4].strip()
         communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
-        classification = process_communication(rules, communication)
-        # I store the last classification
-        if not device_id in classifications:
-            classifications[device_id] = (classification, line_idx)
-        if classification != None:
-            classifications[device_id] = (classification, line_idx)
-        line_idx += 1
+        if not device_id in devices_queues:
+            devices_queues[device_id] = multiprocessing.Queue()
+        device_queue = devices_queues[device_id]
+        device_queue.put((communication, line_idx))
+        job = threading.Thread(target=process_communication_job, args=(device_id, rules, classifications_file))
+        job.start()
+        jobs.append(job)
 
-    for device_id, (classification, line_idx) in classifications.items():
+    for job in jobs:
+        job.join()
+
+    for device_id, (classification, line_idx) in devices_classifications.items():
         classifications_file.write(f"{line_idx},{device_id},{classification}\n")
 
 def main():
