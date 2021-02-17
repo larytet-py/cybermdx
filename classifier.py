@@ -19,11 +19,12 @@ class RuleCommunicatingProtocol():
     def __init__(self, id, protocol_name, classification):
         self.id, self.protocol_name = id, protocol_name
         self.classification = classification
-        
+
+    @staticmethod
     def type():
         return "communicating_protocol"
 
-    def match(communication):
+    def match(self, communication):
         if communication.protocol_name == self.protocol_name:
             return self.classification
         return None
@@ -37,10 +38,11 @@ class RuleCommunicatingWith():
         self.id, self.ip_address = id, ip_address
         self.classification = classification
         
+    @staticmethod
     def type():
         return "communicating_with"
 
-    def match(communication):
+    def match(self, communication):
         if communication.ip_address == self.ip_address:
             return self.classification
         return None
@@ -53,10 +55,11 @@ class RuleCommunicatingWithSubnet():
         self.id, self.subnet = id, subnet
         self.classification = classification
         
+    @staticmethod
     def type():
         return "communicating_with_subnet"
 
-    def match(communication):
+    def match(self, communication):
         if subnet_match(communication.ip_address, == self.subnet):
             return self.classification
         return None
@@ -70,17 +73,35 @@ class RuleCommunicatingWithDomain():
         self.id, self.domain = id, domain
         self.classification = classification
         
+    @staticmethod
     def type():
         return "communicating_with"
 
-    def match(communication):
+    def match(self, communication):
         if subnet_match(communication.ip_address, == self.subnet):
             return self.classification
         return None
 
-def loadRules():
-    def __init__(self, id, ):
+rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
+rules_by_type = {}
+for rule in rules_classes:
+    rule_type = rule.type()
+    rules_by_type[rule_type] = rule
 
+def loadRules(rulesFile):
+    rules = []
+    for line in rulesFile:
+        fields = line.split(",")
+        id = fields[0]
+        rule_type = fields[1]
+        argument = fields[2]
+        classification = fields[3]
+
+        rule_cass = rules_by_type[rule_type]
+        rule = rule_cass(id, argument, classification)
+        rules.append(rule)
+
+    return rules
 
 def main():
     rulesFile = open(sys.argv[1], 'r')
