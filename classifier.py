@@ -119,7 +119,7 @@ def load_rules(rulesFile):
     return rules
 
 def process_communication(rules, communication):
-    result = "unknown"
+    result = None
     for rule in rules: # rules are ordered by ID
         classification = rule.match(communication)
         if classification != None:
@@ -140,7 +140,10 @@ def process_communications(rules, communications_file, classifications_file):
         communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
         classification = process_communication(rules, communication)
         # I store the last classification
-        classifications[device_id] = (classification, line_idx)
+        if not device_id in classifications:
+            classifications[device_id] = (classification, line_idx)
+        if classification != None:
+            classifications[device_id] = (classification, line_idx)
         line_idx += 1
 
     for device_id, (classification, line_idx) in classifications.items():
