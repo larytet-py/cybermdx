@@ -149,6 +149,8 @@ def process_communication_job(device_id, rules, classifications_file):
     classification = process_communication(rules, communication)
     # I store the last classification
     if not device_id in devices_classifications:
+        if classification == None:
+            classification = "unknown"
         devices_classifications[device_id] = (classification, line_idx)
     if classification != None:
         devices_classifications[device_id] = (classification, line_idx)
