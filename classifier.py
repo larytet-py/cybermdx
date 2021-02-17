@@ -81,7 +81,7 @@ class RuleCommunicatingWithDomain():
         return "communicating_with"
 
     def match(self, communication):
-        if subnet_match(communication.ip_address, == self.subnet):
+        if subnet_match(communication.domain == self.domain):
             return self.classification
         return None
 
@@ -95,27 +95,40 @@ def loadRules(rulesFile):
     rules = []
     for line in rulesFile:
         fields = line.split(",")
-        id = fields[0]
+        rule_id = fields[0]
         rule_type = fields[1]
         argument = fields[2]
         classification = fields[3]
 
         rule_class = rules_by_type[rule_type]
-        rule = rule_class(id, argument, classification)
+        rule = rule_class(rule_id, argument, classification)
         rules.append(rule)
 
     return rules
 
+def process_communication(rules, communication):
+    pass
+
+def process_communications(rules, communications_file, classifications_file):
+    for line in communications_file:
+        fields = line.split(",")
+        communication_id = fields[0]
+        timestamp = fields[1]
+        device_id = fields[2]
+        protocol_name = fields[3]
+        host = fields[4]
+        communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
+
 def main():
-    rulesFile = open(sys.argv[1], 'r')
-    rules = loadRules(rulesFile)
+    rules_file = open(sys.argv[1], 'r')
+    rules = loadRules(rules_file)
     rulesFile.close()
 
-    communicationsFile = open(sys.argv[2], 'r')
-    classificationsFile = open(sys.argv[3], 'w')
-    processCommunications(rules, communicationsFile, classificationsFile)
-    communicationsFile.close()
-    classificationsFile.close()
+    communications_file = open(sys.argv[2], 'r')
+    classifications_file = open(sys.argv[3], 'w')
+    process_communications(rules, communications_file, classifications_file)
+    communications_file.close()
+    classifications_file.close()
     
 if __name__ == "__main__":
     main()
