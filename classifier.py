@@ -123,8 +123,12 @@ def loadRules(rulesFile):
     return rules
 
 def process_communication(rules, communication):
+    result = "unknown"
     for rule in rules: # rules are ordered by ID
-        pass
+        classification = rule.match(communication)
+        if classification != None:
+            result = classification
+    return result
 
 def process_communications(rules, communications_file, classifications_file):
     classifications = {}
