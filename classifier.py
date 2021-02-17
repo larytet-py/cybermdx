@@ -1,6 +1,9 @@
 '''
 Get two iput CSV files rules and commuincaitons
 Produce classifications for every line in the communication file 
+
+Build
+pyling classifier.py
 '''
 
 from collections import namedtuple
@@ -97,8 +100,8 @@ def loadRules(rulesFile):
         argument = fields[2]
         classification = fields[3]
 
-        rule_cass = rules_by_type[rule_type]
-        rule = rule_cass(id, argument, classification)
+        rule_class = rules_by_type[rule_type]
+        rule = rule_class(id, argument, classification)
         rules.append(rule)
 
     return rules
@@ -116,7 +119,4 @@ def main():
     
 if __name__ == "__main__":
     main()
-
-
-
 
