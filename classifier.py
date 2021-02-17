@@ -141,6 +141,9 @@ devices_classifications = {}
 devices_queues = {}
 
 def process_communication_job(device_id, rules, classifications_file):
+    '''
+    Apply all rules to the communication for a specific device
+    '''
     device_queue = devices_queues[device_id]
     (communication, line_idx) = device_queue.get()
     classification = process_communication(rules, communication)
@@ -166,6 +169,8 @@ def process_communications(rules, communications_file, classifications_file):
             devices_queues[device_id] = multiprocessing.Queue()
         device_queue = devices_queues[device_id]
         device_queue.put((communication, line_idx))
+        # I create a thread for every communication 
+        # I do not have to. I can use a limited pool of jobs
         job = threading.Thread(target=process_communication_job, args=(device_id, rules, classifications_file))
         job.start()
         jobs.append(job)
