@@ -111,15 +111,15 @@ def read_csv_line(input_file):
         for f in fields:
             f = f.strip()
             result.append(f)
-        yield result
+        yield tuple(result)
 
 def load_rules(rules_file):
     '''
     Read the file line by line, collect rules in a list
     '''
     rules = []
-    for fields in read_csv_line(rules_file):
-        rule_id_s, rule_type, argument, classification = tuple(fields)
+    for fields_tuple in read_csv_line(rules_file):
+        rule_id_s, rule_type, argument, classification = fields_tuple
         rule_id = int(rule_id_s)
         rule_class = rules_by_type[rule_type]
         rule = rule_class(rule_id, argument, classification)
@@ -163,7 +163,7 @@ def process_communication_job(device_id, rules, classifications_file):
         devices_classifications[device_id] = (classification, line_idx)
 
 def csv_row_to_communication_event(fields):
-    communication_id, timestamp, device_id, protocol_name, host = tuple(fields)
+    communication_id, timestamp, device_id, protocol_name, host = fields
     communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
     return communication_event
 
@@ -176,8 +176,8 @@ def process_communications(rules, communications_file, classifications_file):
     '''
     line_idx = 1
     jobs = []
-    for fields in read_csv_line(communications_file):
-        communication_event = csv_row_to_communication_event(fields)
+    for fields_tuple in read_csv_line(communications_file):
+        communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
         if not device_id in devices_queues:
             devices_queues[device_id] = multiprocessing.Queue()
