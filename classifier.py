@@ -103,6 +103,7 @@ def get_rule_id(rule): return rule.rule_id
 
 def read_csv_line(input_file):
     '''
+    read the file, yield fields of the CSV
     Use pandas?
     '''
     for line in input_file:
