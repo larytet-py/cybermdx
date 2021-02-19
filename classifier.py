@@ -150,10 +150,6 @@ def process_communication(rules, communication_event):
 
 devices_classifications = {}
 
-# For parallel execution I need a processing queue for every device_id
-# https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
-devices_queues = {}
-
 def process_communication_job(device_id, device_queue, rules):
     '''
     Read communications from the queue
@@ -178,7 +174,7 @@ def csv_row_to_communication_event(fields):
     communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
     return communication_event
 
-def get_device_queue(device_id, rules):
+def get_device_queue(devices_queues, device_id, rules):
     if not device_id in devices_queues:
         # I create a thread and a queue for every device ID
         queue = multiprocessing.Queue()
@@ -195,18 +191,21 @@ def process_communications(rules, communications_file, classifications_file):
     every device 
     The end result is devices_classifications map of classified devices 
     '''
+    # For parallel execution I need a processing queue for every device_id
+    # https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
+    devices_queues = {}
+
     line_idx = 1
     for fields_tuple in read_csv_line(communications_file):
         communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
-        device_queue = get_device_queue(device_id, rules)
+        device_queue = get_device_queue(devices_queues, device_id, rules)
         device_queue.put((communication_event, line_idx))
         line_idx += 1
 
     for _, (queue, job) in devices_queues.items():
         queue.put((None, 0))  # send 'end' signal to the queues
         job.join()            # wait for all started jobs to complete
-
 
     # write the collected classificatios to a file
     for device_id, (classification, line_idx) in devices_classifications.items():
