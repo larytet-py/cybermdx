@@ -105,8 +105,6 @@ def init_rules():
         rule_type = rule.type()
         rules_by_type[rule_type] = rule
 
-def get_rule_id(rule): return rule.rule_id
-
 def read_csv_line(input_file):
     '''
     read the file, yield fields of the CSV
@@ -133,7 +131,7 @@ def load_rules(rules_file):
         rules.append(rule)
         
     # sort by rule_id
-    rules.sort(key=get_rule_id)
+    rules.sort(key=lambda rule: rule.rule_id)
 
     return rules
 
