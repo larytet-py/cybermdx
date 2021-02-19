@@ -154,12 +154,11 @@ devices_classifications = {}
 # https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
 devices_queues = {}
 
-def process_communication_job(device_id, rules):
+def process_communication_job(device_id, device_queue, rules):
     '''
     Read communications from the queue
     Apply all rules to the communication event for a specific device
     '''
-    device_queue, _ = devices_queues[device_id]
     while True:
         (communication_event, line_idx) = device_queue.get()
         if line_idx < 1:  # end signal?
@@ -191,9 +190,10 @@ def process_communications(rules, communications_file, classifications_file):
         communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
         if not device_id in devices_queues:
-            # I create a thread for every device ID
-            job = threading.Thread(target=process_communication_job, args=(device_id, rules))
-            devices_queues[device_id] = (multiprocessing.Queue(), job)
+            # I create a thread and a queue for every device ID
+            queue = multiprocessing.Queue()
+            job = threading.Thread(target=process_communication_job, args=(device_id, queue, rules))
+            devices_queues[device_id] = (queue, job)
             job.start()
         device_queue, _ = devices_queues[device_id]
         device_queue.put((communication_event, line_idx))
