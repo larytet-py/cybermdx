@@ -119,10 +119,8 @@ def load_rules(rules_file):
     '''
     rules = []
     for fields in read_csv_line(rules_file):
-        rule_id = int(fields[0])
-        rule_type = fields[1]
-        argument = fields[2]
-        classification = fields[3]
+        rule_id_s, rule_type, argument, classification = tuple(fields)
+        rule_id = int(rule_id_s)
         rule_class = rules_by_type[rule_type]
         rule = rule_class(rule_id, argument, classification)
         rules.append(rule)
@@ -165,11 +163,7 @@ def process_communication_job(device_id, rules, classifications_file):
         devices_classifications[device_id] = (classification, line_idx)
 
 def csv_row_to_communication_event(fields):
-    communication_id = fields[0]
-    timestamp = fields[1]
-    device_id = fields[2]
-    protocol_name = fields[3]
-    host = fields[4]
+    communication_id, timestamp, device_id, protocol_name, host = tuple(fields)
     communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
     return communication_event
 
