@@ -23,7 +23,7 @@ def subnet_match(ip_address, subnet):
     '''
     return netaddr.IPAddress(ip_address) in netaddr.IPNetwork(subnet)
 
-Communication = namedtuple('Communication', ["id", "timestamp", "device_id", "protocol_name", "host"])
+CommunicationEvent = namedtuple('CommunicationEvent', ["id", "timestamp", "device_id", "protocol_name", "host"])
 
 class RuleCommunicatingProtocol():
     def __init__(self, rule_id, protocol_name, classification):
@@ -34,8 +34,8 @@ class RuleCommunicatingProtocol():
     def type():
         return "communicating_protocol"
 
-    def match(self, communication):
-        if communication.protocol_name == self.protocol_name:
+    def match(self, communication_event):
+        if communication_event.protocol_name == self.protocol_name:
             return self.classification
         return None
         
@@ -52,8 +52,8 @@ class RuleCommunicatingWith():
     def type():
         return "communicating_with"
 
-    def match(self, communication):
-        if communication.host == self.ip_address:
+    def match(self, communication_event):
+        if communication_event.host == self.ip_address:
             return self.classification
         return None
 
@@ -69,8 +69,8 @@ class RuleCommunicatingWithSubnet():
     def type():
         return "communicating_with_subnet"
 
-    def match(self, communication):
-        if subnet_match(communication.host, self.subnet):
+    def match(self, communication_event):
+        if subnet_match(communication_event.host, self.subnet):
             return self.classification
         return None
 
@@ -87,8 +87,8 @@ class RuleCommunicatingWithDomain():
     def type():
         return "communicating_with_domain"
 
-    def match(self, communication):
-        domain = host_from_address(communication.host)
+    def match(self, communication_event):
+        domain = host_from_address(communication_event.host)
         if domain == self.domain:
             return self.classification
         return None
@@ -123,13 +123,13 @@ def load_rules(rulesFile):
 
     return rules
 
-def process_communication(rules, communication):
+def process_communication(rules, communication_event):
     '''
-    Apply all rules to the communication
+    Apply all rules to the communication_event
     '''
     result = None
     for rule in rules: # rules are ordered by ID
-        classification = rule.match(communication)
+        classification = rule.match(communication_event)
         if classification != None:
             result = classification
     return result
@@ -142,11 +142,11 @@ devices_queues = {}
 
 def process_communication_job(device_id, rules, classifications_file):
     '''
-    Apply all rules to the communication for a specific device
+    Apply all rules to the communication event for a specific device
     '''
     device_queue = devices_queues[device_id]
-    (communication, line_idx) = device_queue.get()
-    classification = process_communication(rules, communication)
+    (communication_event, line_idx) = device_queue.get()
+    classification = process_communication(rules, communication_event)
     # I store the last classification
     if not device_id in devices_classifications:
         if classification == None:
@@ -155,7 +155,7 @@ def process_communication_job(device_id, rules, classifications_file):
     if classification != None:
         devices_classifications[device_id] = (classification, line_idx)
 
-def csv_row_to_communication(line):
+def csv_row_to_communication_event(line):
     line = line.strip()
     fields = line.split(",")
     communication_id = fields[0].strip()
@@ -163,20 +163,26 @@ def csv_row_to_communication(line):
     device_id = fields[2].strip()
     protocol_name = fields[3].strip()
     host = fields[4].strip()
-    communication = Communication(communication_id, timestamp, device_id, protocol_name, host)
-    return communication
+    communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
+    return communication_event
 
 def process_communications(rules, communications_file, classifications_file):
+    '''
+    Read the file line by line
+    Push every communication event to the corresponding queue. There is one queue for
+    every device 
+    The end result is devices_classifications map of classified devices 
+    '''
     line_idx = 1
     jobs = []
     for line in communications_file:
-        communication = csv_row_to_communication(line)
-        device_id = communication.device_id
+        communication_event = csv_row_to_communication_event(line)
+        device_id = communication_event.device_id
         if not device_id in devices_queues:
             devices_queues[device_id] = multiprocessing.Queue()
         device_queue = devices_queues[device_id]
-        device_queue.put((communication, line_idx))
-        # I create a thread for every communication 
+        device_queue.put((communication_event, line_idx))
+        # I create a thread for every communication event
         # I do not have to. I can use a limited pool of jobs
         job = threading.Thread(target=process_communication_job, args=(device_id, rules, classifications_file))
         job.start()
