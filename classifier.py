@@ -98,7 +98,7 @@ class RuleCommunicatingWithDomain():
             return self.classification
         return None
 
-def read_csv_line(input_file):
+def csv_file(input_file):
     '''
     read the file, yield fields of the CSV
     Use pandas?
@@ -125,7 +125,7 @@ def load_rules(rules_file):
     rules_by_type = dict(zip(map(lambda rule_class: rule_class.type(), rules_classes), rules_classes)) 
 
     rules = []
-    for fields_tuple in read_csv_line(rules_file):
+    for fields_tuple in csv_file(rules_file):
         rule_id_s, rule_type, argument, classification = fields_tuple
         rule_id = int(rule_id_s)
         rule_class = rules_by_type[rule_type]
@@ -197,7 +197,7 @@ def process_communications(rules, communications_file, classifications_file):
     devices_queues = {}  # For parallel execution I need a processing queue for every device_id
 
     line_idx = 1
-    for fields_tuple in read_csv_line(communications_file):
+    for fields_tuple in csv_file(communications_file):
         communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
         device_queue = get_device_queue(devices_queues, device_id, rules, devices_classifications)
