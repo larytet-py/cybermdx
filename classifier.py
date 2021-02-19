@@ -97,13 +97,8 @@ class RuleCommunicatingWithDomain():
             return self.classification
         return None
 
-rules_by_type = {}
-
-def init_rules():
-    rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
-    for rule in rules_classes:
-        rule_type = rule.type()
-        rules_by_type[rule_type] = rule
+rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
+rules_by_type = dict(zip(map(lambda rule_class: rule_class.type(), rules_classes), rules_classes)) 
 
 def read_csv_line(input_file):
     '''
@@ -211,8 +206,6 @@ def process_communications(rules, communications_file, classifications_file):
         classifications_file.write(f"{line_idx},{device_id},{classification}\n")
 
 def main():
-    init_rules()
-
     rules_file = open(sys.argv[1], 'r')
     rules = load_rules(rules_file)
     rules_file.close()
