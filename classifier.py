@@ -1,4 +1,5 @@
 import sys
+import inspect
 from collections import namedtuple
 import netaddr
 import IPy
@@ -114,7 +115,9 @@ def load_rules(rules_file):
     '''
     Read the file line by line, collect rules in a list
     '''
-    rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
+    module_classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    rules_classes = list(filter(lambda module_class: module_class[0].startswith("Rule"), module_classes))
+    rules_classes = [rule_class[1] for rule_class in rules_classes]
     rules_by_type = dict(zip(map(lambda rule_class: rule_class.type(), rules_classes), rules_classes)) 
 
     rules = []
