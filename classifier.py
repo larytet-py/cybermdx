@@ -178,6 +178,16 @@ def csv_row_to_communication_event(fields):
     communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
     return communication_event
 
+def get_device_queue(device_id, rules):
+    if not device_id in devices_queues:
+        # I create a thread and a queue for every device ID
+        queue = multiprocessing.Queue()
+        job = threading.Thread(target=process_communication_job, args=(device_id, queue, rules))
+        devices_queues[device_id] = (queue, job)
+        job.start()
+    queue, _ = devices_queues[device_id]
+    return queue
+
 def process_communications(rules, communications_file, classifications_file):
     '''
     Read the file line by line
@@ -189,13 +199,7 @@ def process_communications(rules, communications_file, classifications_file):
     for fields_tuple in read_csv_line(communications_file):
         communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
-        if not device_id in devices_queues:
-            # I create a thread and a queue for every device ID
-            queue = multiprocessing.Queue()
-            job = threading.Thread(target=process_communication_job, args=(device_id, queue, rules))
-            devices_queues[device_id] = (queue, job)
-            job.start()
-        device_queue, _ = devices_queues[device_id]
+        device_queue = get_device_queue(device_id, rules)
         device_queue.put((communication_event, line_idx))
         line_idx += 1
 
