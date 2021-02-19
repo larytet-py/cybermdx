@@ -97,9 +97,6 @@ class RuleCommunicatingWithDomain():
             return self.classification
         return None
 
-rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
-rules_by_type = dict(zip(map(lambda rule_class: rule_class.type(), rules_classes), rules_classes)) 
-
 def read_csv_line(input_file):
     '''
     read the file, yield fields of the CSV
@@ -117,6 +114,9 @@ def load_rules(rules_file):
     '''
     Read the file line by line, collect rules in a list
     '''
+    rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
+    rules_by_type = dict(zip(map(lambda rule_class: rule_class.type(), rules_classes), rules_classes)) 
+
     rules = []
     for fields_tuple in read_csv_line(rules_file):
         rule_id_s, rule_type, argument, classification = fields_tuple
