@@ -117,7 +117,7 @@ def load_rules(rules_file):
     '''
 
     # Get list of "Rule" classes
-    module_classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    module_classes = inspect.getmembers(sys.modules[__name__], inspect.isclass) # list oftuples (name, class)
     rules_classes = list(filter(lambda module_class: module_class[0].startswith("Rule"), module_classes))
     rules_classes = [rule_class[1] for rule_class in rules_classes]
 
