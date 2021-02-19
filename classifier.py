@@ -101,19 +101,28 @@ for rule in rules_classes:
 
 def get_rule_id(rule): return rule.rule_id
 
-def load_rules(rulesFile):
+def read_csv_line(input_file):
+    '''
+    Use pandas?
+    '''
+    for line in input_file:
+        fields = line.split(",")
+        result = []
+        for f in fields:
+            f = f.strip()
+            result.append(f)
+        yield result
+
+def load_rules(rules_file):
     '''
     Read the file line by line, collect rules in a list
     '''
     rules = []
-    for line in rulesFile:
-        line = line.strip()
-        fields = line.split(",")
-        rule_id = int(fields[0].strip())
-        rule_type = fields[1].strip()
-        argument = fields[2].strip()
-        classification = fields[3].strip()
-
+    for fields in read_csv_line(rules_file):
+        rule_id = int(fields[0])
+        rule_type = fields[1]
+        argument = fields[2]
+        classification = fields[3]
         rule_class = rules_by_type[rule_type]
         rule = rule_class(rule_id, argument, classification)
         rules.append(rule)
@@ -155,14 +164,12 @@ def process_communication_job(device_id, rules, classifications_file):
     if classification != None:
         devices_classifications[device_id] = (classification, line_idx)
 
-def csv_row_to_communication_event(line):
-    line = line.strip()
-    fields = line.split(",")
-    communication_id = fields[0].strip()
-    timestamp = fields[1].strip()
-    device_id = fields[2].strip()
-    protocol_name = fields[3].strip()
-    host = fields[4].strip()
+def csv_row_to_communication_event(fields):
+    communication_id = fields[0]
+    timestamp = fields[1]
+    device_id = fields[2]
+    protocol_name = fields[3]
+    host = fields[4]
     communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
     return communication_event
 
@@ -175,8 +182,8 @@ def process_communications(rules, communications_file, classifications_file):
     '''
     line_idx = 1
     jobs = []
-    for line in communications_file:
-        communication_event = csv_row_to_communication_event(line)
+    for fields in read_csv_line(communications_file):
+        communication_event = csv_row_to_communication_event(fields)
         device_id = communication_event.device_id
         if not device_id in devices_queues:
             devices_queues[device_id] = multiprocessing.Queue()
