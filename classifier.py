@@ -5,23 +5,6 @@ import IPy
 import multiprocessing
 import threading
 
-# simple cache
-reversed_names = {}
-def host_from_address(ip_address):
-    if ip_address in reversed_names:
-        return reversed_names[ip_address]
-
-    ip = IPy.IP(ip_address)
-    domain = ip.reverseName()
-    # cache the result
-    reversed_names[ip_address] = domain
-    return domain
-
-def subnet_match(ip_address, subnet):
-    '''
-    https://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
-    '''
-    return netaddr.IPAddress(ip_address) in netaddr.IPNetwork(subnet)
 
 CommunicationEvent = namedtuple('CommunicationEvent', ["id", "timestamp", "device_id", "protocol_name", "host"])
 
@@ -69,8 +52,15 @@ class RuleCommunicatingWithSubnet():
     def type():
         return "communicating_with_subnet"
 
+    @staticmethod
+    def subnet_match(ip_address, subnet):
+        '''
+        https://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
+        '''
+        return netaddr.IPAddress(ip_address) in netaddr.IPNetwork(subnet)
+
     def match(self, communication_event):
-        if subnet_match(communication_event.host, self.subnet):
+        if RuleCommunicatingWithSubnet.subnet_match(communication_event.host, self.subnet):
             return self.classification
         return None
 
@@ -87,17 +77,33 @@ class RuleCommunicatingWithDomain():
     def type():
         return "communicating_with_domain"
 
+    # simple cache
+    reversed_names = {}
+    @staticmethod
+    def host_from_address(ip_address):
+        rcwd = RuleCommunicatingWithDomain
+        if ip_address in rcwd.reversed_names:
+            return rcwd.reversed_names[ip_address]
+
+        ip = IPy.IP(ip_address)
+        domain = ip.reverseName()
+        # cache the result
+        rcwd.reversed_names[ip_address] = domain
+        return domain
+
     def match(self, communication_event):
-        domain = host_from_address(communication_event.host)
+        domain = RuleCommunicatingWithDomain.host_from_address(communication_event.host)
         if domain == self.domain:
             return self.classification
         return None
 
-rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
 rules_by_type = {}
-for rule in rules_classes:
-    rule_type = rule.type()
-    rules_by_type[rule_type] = rule
+
+def init_rules():
+    rules_classes = [RuleCommunicatingProtocol, RuleCommunicatingWith, RuleCommunicatingWithSubnet, RuleCommunicatingWithDomain]
+    for rule in rules_classes:
+        rule_type = rule.type()
+        rules_by_type[rule_type] = rule
 
 def get_rule_id(rule): return rule.rule_id
 
@@ -148,7 +154,7 @@ devices_classifications = {}
 # https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
 devices_queues = {}
 
-def process_communication_job(device_id, rules, classifications_file):
+def process_communication_job(device_id, rules):
     '''
     Apply all rules to the communication event for a specific device
     '''
@@ -186,7 +192,7 @@ def process_communications(rules, communications_file, classifications_file):
         device_queue.put((communication_event, line_idx))
         # I create a thread for every communication event
         # I do not have to. I can use a limited pool of jobs
-        job = threading.Thread(target=process_communication_job, args=(device_id, rules, classifications_file))
+        job = threading.Thread(target=process_communication_job, args=(device_id, rules))
         job.start()
         jobs.append(job)
         line_idx += 1
@@ -200,6 +206,8 @@ def process_communications(rules, communications_file, classifications_file):
         classifications_file.write(f"{line_idx},{device_id},{classification}\n")
 
 def main():
+    init_rules()
+
     rules_file = open(sys.argv[1], 'r')
     rules = load_rules(rules_file)
     rules_file.close()
