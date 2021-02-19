@@ -148,9 +148,7 @@ def process_communication(rules, communication_event):
             result = classification
     return result
 
-devices_classifications = {}
-
-def process_communication_job(device_id, device_queue, rules):
+def process_communication_job(device_id, device_queue, rules, devices_classifications):
     '''
     Read communications from the queue
     Apply all rules to the communication event for a specific device
@@ -174,11 +172,11 @@ def csv_row_to_communication_event(fields):
     communication_event = CommunicationEvent(communication_id, timestamp, device_id, protocol_name, host)
     return communication_event
 
-def get_device_queue(devices_queues, device_id, rules):
+def get_device_queue(devices_queues, device_id, rules, devices_classifications):
     if not device_id in devices_queues:
         # I create a thread and a queue for every device ID
         queue = multiprocessing.Queue()
-        job = threading.Thread(target=process_communication_job, args=(device_id, queue, rules))
+        job = threading.Thread(target=process_communication_job, args=(device_id, queue, rules, devices_classifications))
         devices_queues[device_id] = (queue, job)
         job.start()
     queue, _ = devices_queues[device_id]
@@ -191,13 +189,14 @@ def process_communications(rules, communications_file, classifications_file):
     every device 
     The end result is devices_classifications map of classified devices 
     '''
+    devices_classifications = {}
     devices_queues = {}  # For parallel execution I need a processing queue for every device_id
 
     line_idx = 1
     for fields_tuple in read_csv_line(communications_file):
         communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
-        device_queue = get_device_queue(devices_queues, device_id, rules)
+        device_queue = get_device_queue(devices_queues, device_id, rules, devices_classifications)
         device_queue.put((communication_event, line_idx))
         line_idx += 1
 
