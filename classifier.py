@@ -173,6 +173,10 @@ def csv_row_to_communication_event(fields):
     return communication_event
 
 def get_device_queue(devices_queues, device_id, rules, devices_classifications):
+    '''
+    If needed create a new queue, start a job, add both to the map devices_queues
+    return the queue
+    '''
     if not device_id in devices_queues:
         # I create a thread and a queue for every device ID
         queue = multiprocessing.Queue()
