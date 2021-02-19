@@ -191,9 +191,7 @@ def process_communications(rules, communications_file, classifications_file):
     every device 
     The end result is devices_classifications map of classified devices 
     '''
-    # For parallel execution I need a processing queue for every device_id
-    # https://stackoverflow.com/questions/16857883/need-a-thread-safe-asynchronous-message-queue
-    devices_queues = {}
+    devices_queues = {}  # For parallel execution I need a processing queue for every device_id
 
     line_idx = 1
     for fields_tuple in read_csv_line(communications_file):
