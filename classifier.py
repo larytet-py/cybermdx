@@ -156,18 +156,23 @@ devices_queues = {}
 
 def process_communication_job(device_id, rules):
     '''
+    Read communications from the queue
     Apply all rules to the communication event for a specific device
     '''
-    device_queue = devices_queues[device_id]
-    (communication_event, line_idx) = device_queue.get()
-    classification = process_communication(rules, communication_event)
-    # I store the last classification
-    if not device_id in devices_classifications:
-        if classification == None:
-            classification = "unknown"
-        devices_classifications[device_id] = (classification, line_idx)
-    if classification != None:
-        devices_classifications[device_id] = (classification, line_idx)
+    device_queue, _ = devices_queues[device_id]
+    while True:
+        (communication_event, line_idx) = device_queue.get()
+        if line_idx < 1:  # end signal?
+            break
+
+        classification = process_communication(rules, communication_event)
+        # I store the last classification
+        if not device_id in devices_classifications:
+            if classification == None:
+                classification = "unknown"
+            devices_classifications[device_id] = (classification, line_idx)
+        if classification != None:
+            devices_classifications[device_id] = (classification, line_idx)
 
 def csv_row_to_communication_event(fields):
     communication_id, timestamp, device_id, protocol_name, host = fields
@@ -182,24 +187,22 @@ def process_communications(rules, communications_file, classifications_file):
     The end result is devices_classifications map of classified devices 
     '''
     line_idx = 1
-    jobs = []
     for fields_tuple in read_csv_line(communications_file):
         communication_event = csv_row_to_communication_event(fields_tuple)
         device_id = communication_event.device_id
         if not device_id in devices_queues:
-            devices_queues[device_id] = multiprocessing.Queue()
-        device_queue = devices_queues[device_id]
+            # I create a thread for every device ID
+            job = threading.Thread(target=process_communication_job, args=(device_id, rules))
+            devices_queues[device_id] = (multiprocessing.Queue(), job)
+            job.start()
+        device_queue, _ = devices_queues[device_id]
         device_queue.put((communication_event, line_idx))
-        # I create a thread for every communication event
-        # I do not have to. I can use a limited pool of jobs
-        job = threading.Thread(target=process_communication_job, args=(device_id, rules))
-        job.start()
-        jobs.append(job)
         line_idx += 1
 
-    # wait for all started jobs
-    for job in jobs:
-        job.join()
+    for _, (queue, job) in devices_queues.items():
+        queue.put((None, 0))  # send 'end' signal to the queues
+        job.join()            # wait for all started jobs to complete
+
 
     # write the collected classificatios to a file
     for device_id, (classification, line_idx) in devices_classifications.items():
