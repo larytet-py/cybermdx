@@ -1,5 +1,9 @@
 # cymd
 
+
+The task is to crawl a network of nodes, collect a map of nodes
+Assume existence of the API getConnectdEndPoints() returning a list of nodes
+
 #include <string>
 #include <sync>
 /* SDK */
